@@ -77,10 +77,10 @@
             <div class="wrapper clearfix">
                 <div class="wrap-box">
                     <ul class="img-list">
-                        <li v-for="(itemSon, i) in item.datas" :key="itemSon.cateID">
+                        <li v-for="(itemSon, i) in item.datas">
                             <a href="#/site/goodsinfo/87" class="">
                                 <div class="img-box">
-                                    <img :src="itemSon.img_url">
+                                    <img v-lazy="itemSon.img_url">
                                 </div>
                                 <div class="info">
                                     <h3>{{itemSon.artTitle}}</h3>

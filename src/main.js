@@ -3,6 +3,11 @@ import VueRouter from 'vue-router'
 import ElementUI from 'element-ui';
 import 'element-ui/lib/theme-chalk/index.css';
 import App from './App.vue'
+import VueLazyload from 'vue-lazyload'
+import path from 'path'
+Vue.use(VueLazyload, {
+  loading: require('./assets/hoverNav20151228/images/01.gif')
+})
 
 
 Vue.use(VueRouter);
