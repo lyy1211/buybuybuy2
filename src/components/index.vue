@@ -77,8 +77,8 @@
             <div class="wrapper clearfix">
                 <div class="wrap-box">
                     <ul class="img-list">
-                        <li v-for="(itemSon, i) in item.datas">
-                            <a href="#/site/goodsinfo/87" class="">
+                        <li v-for="(itemSon, i) in item.datas" :key="itemSon.artID">
+                            <router-link :to="'/goodsdetail/'+itemSon.artID">
                                 <div class="img-box">
                                     <img v-lazy="itemSon.img_url">
                                 </div>
@@ -93,7 +93,7 @@
                                         </span>
                                     </p>
                                 </div>
-                            </a>
+                            </router-link>
                         </li>
                     </ul>
                 </div>
@@ -102,8 +102,8 @@
     </div>
 </template>
 <script>
-import axios from "axios";
-import moment from 'moment';
+
+// import moment from 'moment';
 
 export default {
   data: function() {
@@ -115,28 +115,23 @@ export default {
     };
   },
   mounted(){
-    axios
-      .get("http://47.106.148.205:8899/site/goods/getgoodsgroup")
+    this.axios
+      .get("site/goods/getgoodsgroup")
       .then(response => {
-          console.log(response)
+        //   console.log(response)
         this.goodlist=response.data.message;
       })
   },
   beforeMount() {
-    axios
-      .get("http://47.106.148.205:8899/site/goods/gettopdata/goods")
+   this.axios
+      .get("site/goods/gettopdata/goods")
       .then(response => {
-          console.log(response)
+        //   console.log(response)
         this.catelist = response.data.message.catelist;
         this.sliderlist = response.data.message.sliderlist;
         this.toplist = response.data.message.toplist;
       })
   },
-  filters:{
-      cutTime(value){
-          return moment(value).format('YYYY-MM-DD');
-      }
-  }
 };
 </script>
 
