@@ -10,16 +10,16 @@
                         <a target="_blank" href="#"></a>
                     </div>
                     <div id="menu" class="right-box">
-                        <span style="display: none;">
-                            <a href="" class="">登录</a>
+                        <span v-if="!this.$store.state.islogin">
+                            <router-link to="/login">登录</router-link>
                             <strong>|</strong>
                             <a href="" class="">注册</a>
                             <strong>|</strong>
                         </span>
-                        <span>
-                            <a href="" class="">会员中心</a>
+                        <span v-if="this.$store.state.islogin">
+                            <router-link to="/memberCenter">会员中心</router-link>
                             <strong>|</strong>
-                            <a>退出</a>
+                            <a @click="logout">退出</a>
                             <strong>|</strong>
                         </span>
                         <router-link to="/shopcar">
@@ -118,6 +118,16 @@
     import $ from 'jquery'
 
     export default {
+        methods:{
+            logout(){
+                this.axios.get('site/account/logout').then(response=>{
+                    ////console.log(response)
+                    this.$store.commit('changeLogin',false)
+                }).catch(err=>{
+                    ////console.log(err);
+                })
+            }
+        },
         mounted: function () {
             $("#menu2 li a").wrapInner('<span class="out"></span>');
             $("#menu2 li a").each(function () {

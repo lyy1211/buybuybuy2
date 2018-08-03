@@ -56,7 +56,7 @@
                                 </tr>
                                 <tr v-for="(item, index) in message" :key="item.id">
                                     <td width="48" align="center">
-                                        <el-switch  active-color="#409eff" inactive-color="#555555">
+                                        <el-switch v-model="item.is_selected"  active-color="#409eff" inactive-color="#555555">
                                         </el-switch>
                                     </td>
                                     <td align="left" colspan="2">
@@ -66,11 +66,11 @@
                                     </td>
                                     <td width="84" align="left">{{item.sell_price}}</td>
                                     <td width="104" align="center">
-                                        <el-input-number v-model="item.buycount" size="mini" :min="1" :max="10" label="描述文字"></el-input-number>
+                                        <el-input-number @change="changeNum($event,index)" v-model="item.buycount" size="mini" :min="1" :max="10" label="描述文字"></el-input-number>
                                     </td>
-                                    <td width="104" align="left"></td>
+                                    <td width="104" align="left">{{item.sell_price*item.buycount}}</td>
                                     <td width="54" align="center">
-                                        <a href="javascript:void(0)">删除</a>
+                                        <a @click="del(index)" href="javascript:void(0)">删除</a>
                                     </td>
                                 </tr>
                                 <tr v-if="message.length==0">
@@ -90,7 +90,7 @@
                                 <tr>
                                     <th align="right" colspan="8">
                                         已选择商品
-                                        <b class="red" id="totalQuantity">0</b> 件 &nbsp;&nbsp;&nbsp; 商品总金额（不含运费）：
+                                        <b class="red" id="totalQuantity">{{totalNum}}</b> 件 &nbsp;&nbsp;&nbsp; 商品总金额（不含运费）：
                                         <span class="red">￥</span>
                                         <b class="red" id="totalAmount">{{totalCount}}</b>元
                                     </th>
@@ -102,8 +102,12 @@
                     <!--购物车底部-->
                     <div class="cart-foot clearfix">
                         <div class="right-box">
-                            <button class="button" onclick="javascript:location.href='/index.html';">继续购物</button>
-                            <button class="submit" onclick="formSubmit(this, '/', '/shopping.html');">立即结算</button>
+                            <router-link to="/index">
+                                <button class="button">继续购物</button>
+                            </router-link>
+                            <a @click="payment">
+                                <button class="submit">立即结算</button>
+                            </a>
                         </div>
                     </div>
                     <!--购物车底部-->
@@ -113,47 +117,112 @@
     </div>
 </template>
 <script>
-    export default {
-        data:function(){
-            return {
-                message:[]
-            }
-        },
-        methods:{
-            render(){
-                // console.log(this.$store.state.buyList);
-            let buyList = this.$store.state.buyList;
-            let ids='';
-            for (const key in buyList) {
-                ids+=key;
-                ids+=','
-            }
-            ids=ids.slice(0,-1)
-            this.axios(`site/comment/getshopcargoods/${ids}`).then(response=>{
-                // console.log(response)
-                this.message=response.data.message;
-                this.message.forEach((v,i)=>{
-                    v.buycount = buyList[v.id];
-                })
-            }).catch(err=>{
-                console.log(err)
-            })
-            }
-        },
-        computed:{
-            totalCount(){
-                let price=0;
-                this.message.forEach((v,i)=>{
-                    price+=v.buycount*v.sell_price
-                })
-                return price;
-            }
-        },
-        created(){
-            this.render()
-        }
-
+export default {
+  data: function() {
+    return {
+      message: []
+    };
+  },
+  methods: {
+    render() {
+      // ////console.log(this.$store.state.buyList);
+      let buyList = this.$store.state.buyList;
+      let ids = "";
+      for (const key in buyList) {
+        ids += key;
+        ids += ",";
+      }
+      if (ids == "") {
+        this.$Spin.hide();
+        return;
     }
+      ids = ids.slice(0, -1);
+      this.axios(`site/comment/getshopcargoods/${ids}`)
+        .then(response => {
+          // ////console.log(response)
+          response.data.message.forEach((v, i) => {
+            v.buycount = buyList[v.id];
+            v.is_selected = true;
+          });
+          this.message = response.data.message;
+          setTimeout(() => {
+          this.$Spin.hide();
+        }, 500);
+        })
+        .catch(err => {
+          ////console.log(err);
+        });
+    },
+    changeNum(value, index) {
+      this.$store.commit("changebuycoutById", {
+        goodId: this.message[index].id,
+        buycount: value
+      });
+    },
+    del(index) {
+      this.$confirm("此操作将永久删除该文件, 是否继续?", "提示", {
+        confirmButtonText: "确定",
+        cancelButtonText: "取消",
+        type: "warning"
+      })
+        .then(() => {
+          this.$message({
+            type: "success",
+            message: "删除成功!"
+          });
+            this.$store.commit("delGood", this.message[index].id);
+            this.message.splice(index, 1);
+            // ////console.log(this.message)
+        })
+        .catch(() => {
+          this.$message({
+            type: "info",
+            message: "已取消删除"
+          });
+        });
+    },
+    payment(){
+        let ids='';
+        let buyList=this.message
+        buyList.forEach((v,i)=>{
+            if(v.is_selected){
+                ids+=v.id;
+                ids+=","
+            }
+        })
+        if(ids==''){
+            this.$Message.error('你没有选择商品支付')
+            return
+        }
+        ids=ids.slice(0,-1);
+        this.$router.push('/payorder/'+ids)
+    }
+  },
+  computed: {
+    totalNum() {
+      let num = 0;
+      this.message.forEach((v, i) => {
+        if (v.is_selected) {
+          num += v.buycount;
+        }
+      });
+      return num;
+    },
+    totalCount() {
+      let price = 0;
+      this.message.forEach((v, i) => {
+        if (v.is_selected) {
+          price += v.buycount * v.sell_price;
+        }
+      });
+      return price;
+    }
+  },
+  created() {
+    this.$Spin.show();
+    this.render();
+  }
+};
 </script>
 <style scoped>
 </style>

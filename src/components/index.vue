@@ -118,7 +118,7 @@ export default {
     this.axios
       .get("site/goods/getgoodsgroup")
       .then(response => {
-        //   console.log(response)
+        //   ////console.log(response)
         this.goodlist=response.data.message;
       })
   },
@@ -126,7 +126,7 @@ export default {
    this.axios
       .get("site/goods/gettopdata/goods")
       .then(response => {
-        //   console.log(response)
+        //   ////console.log(response)
         this.catelist = response.data.message.catelist;
         this.sliderlist = response.data.message.sliderlist;
         this.toplist = response.data.message.toplist;

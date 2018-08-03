@@ -158,132 +158,170 @@
             </div>
         </div>
         <BackTop></BackTop>
+         <img class="moveImg" v-if="imglist.length!=0" :src="imglist[0].original_path" alt="">
     </div>
 </template>
 <script>
-    import ProductZoomer from 'vue-product-zoomer'
-    export default {
-        data: function () {
-            return {
-                mess:'',
-                goodsinfo: {},
-                hotgoodslist: [],
-                imglist: [],
-                isShowintro:true,
-                num:1,
-                images: {
-                    normal_size: [],
-                },
-                zoomerOptions: {
-                    zoomFactor: 2,
-                    pane: 'container-round',
-                    hoverDelay: 300,
-                    namespace: 'inline-zoomer',
-                    move_by_click:true,
-                    scroll_items: 4,
-                    choosed_thumb_border_color: "#bbdefb"
-                },
-                pageIndex:1,
-                pageSize:5,
-                totalcount:0,
-                commentslist:[]
-            }
-        },
-        components: {
-            ProductZoomer
-        },
-        methods: {
-            render() {
-                this.imglist=[];
-                this.images.normal_size=[];
-                this.axios
-                    .get(`site/goods/getgoodsinfo/${this.$route.params.id}`)
-                    .then(response => {
-                        this.goodsinfo = response.data.message.goodsinfo;
-                        this.hotgoodslist = response.data.message.hotgoodslist;
-                        this.imglist = response.data.message.imglist;
-                        this.imglist.forEach((v,i)=>{
-                            this.images.normal_size.push({
-                                id: v.id,
-                                url: v.original_path
-                            });
-                        })
-                        console.log(this.images.normal_size)
-                    }).catch(err => {
-                        console.log(err)
-                    })
-            },
-            submitcomment(){
-                if(this.mess==''){
-                    this.$Message.error('你输入的内容为空');    
-                }
-                this.axios.post(`site/validate/comment/post/goods/${this.$route.params.id}`,{
-                    commenttxt:this.mess
-                })
-                .then(response=>{
-                    this.pageIndex=1;
-                    this.getcomment();
-                    this.mess=''
-                }).catch(err=>{
-                    console.log(err)
-                })
-            },
-            getcomment(){
-                this.axios.get(`site/comment/getbypage/goods/${this.$route.params.id}?pageIndex=${this.pageIndex}&pageSize=${this.pageSize}`)
-                .then(response=>{
-                    console.log(response)
-                    this.totalcount=response.data.totalcount;
-                    this.commentslist=response.data.message;
-                    console.log(this.commentslist);
-                }).catch(err=>{
-                    console.log(err)
-                })
-            },
-            page(page){
-                //页码改变
-                this.pageIndex=page;
-                // console.log(page)
-                this.getcomment();
-            },
-            size(size){
-                //页容量改变
-                this.pageSize=size;
-                this.getcomment();
-            },
-            cartAdd(){
-                // console.log(this.$store)
-                this.$store.commit('buygoods', {
-                    goodId:this.$route.params.id,
-                    goodNum:parseInt(this.num)
-                }) 
-            }
-        },
-        created() {
-            this.render()
-            this.getcomment()  
-        },
-        watch: {
-            '$route' (to, from) {
-                // 对路由变化作出响应...
-                this.render()
-            }
-        }
-
+import ProductZoomer from "vue-product-zoomer";
+import $ from "jquery";
+export default {
+  data: function() {
+    return {
+      mess: "",
+      goodsinfo: {},
+      hotgoodslist: [],
+      imglist: [],
+      isShowintro: true,
+      num: 1,
+      images: {
+        normal_size: []
+      },
+      zoomerOptions: {
+        zoomFactor: 2,
+        pane: "container-round",
+        hoverDelay: 300,
+        namespace: "inline-zoomer",
+        move_by_click: true,
+        scroll_items: 4,
+        choosed_thumb_border_color: "#bbdefb"
+      },
+      pageIndex: 1,
+      pageSize: 5,
+      totalcount: 0,
+      commentslist: []
+    };
+  },
+  components: {
+    ProductZoomer
+  },
+  methods: {
+    render() {
+      this.imglist = [];
+      this.images.normal_size = [];
+      this.axios
+        .get(`site/goods/getgoodsinfo/${this.$route.params.id}`)
+        .then(response => {
+          this.goodsinfo = response.data.message.goodsinfo;
+          this.hotgoodslist = response.data.message.hotgoodslist;
+          this.imglist = response.data.message.imglist;
+          this.imglist.forEach((v, i) => {
+            this.images.normal_size.push({
+              id: v.id,
+              url: v.original_path
+            });
+          });
+          ////console.log(this.images.normal_size)
+        })
+        .catch(err => {
+          ////console.log(err)
+        });
+    },
+    submitcomment() {
+      if (this.mess == "") {
+        this.$Message.error("你输入的内容为空");
+      }
+      this.axios
+        .post(`site/validate/comment/post/goods/${this.$route.params.id}`, {
+          commenttxt: this.mess
+        })
+        .then(response => {
+          this.pageIndex = 1;
+          this.getcomment();
+          this.mess = "";
+        })
+        .catch(err => {
+          ////console.log(err)
+        });
+    },
+    getcomment() {
+      this.axios
+        .get(
+          `site/comment/getbypage/goods/${this.$route.params.id}?pageIndex=${
+            this.pageIndex
+          }&pageSize=${this.pageSize}`
+        )
+        .then(response => {
+          //console.log(response)
+          this.totalcount = response.data.totalcount;
+          this.commentslist = response.data.message;
+          //console.log(this.commentslist);
+        })
+        .catch(err => {
+          //console.log(err)
+        });
+    },
+    page(page) {
+      //页码改变
+      this.pageIndex = page;
+      // ////console.log(page)
+      this.getcomment();
+    },
+    size(size) {
+      //页容量改变
+      this.pageSize = size;
+      this.getcomment();
+    },
+    cartAdd() {
+      //console.log(this.$store)
+      // console.log(this.imglist)
+      console.log($(".add").offset());
+      let offset = $("#buyButton .add").offset();
+      // 获取购物车的位置
+      let cartOffset = $(".icon-cart").offset();
+      // // console.log(offset);// top left
+      $(".moveImg")
+        .show().css(offset)
+        .addClass("move")
+        .animate(cartOffset, 1000, () => {
+          $(".moveImg")
+            .removeClass("move")
+            .hide();
+        });
+      this.$store.commit("buygoods", {
+        goodId: this.$route.params.id,
+        goodNum: parseInt(this.num)
+      });
     }
+  },
+  created() {
+    this.render();
+    this.getcomment();
+  },
+  watch: {
+    $route(to, from) {
+      // 对路由变化作出响应...
+      this.render();
+    }
+  }
+};
 </script>
 <style>
-@import url('../../node_modules/font-awesome/css/font-awesome.min.css');
-.pic-box{
-    width: 368px;
+@import url("../../node_modules/font-awesome/css/font-awesome.min.css");
+
+.inline-zoomer-zoomer-box {
+  width: 368px;
 }
-/* .control-box {
-    height: 70px ;
-} */
-/* .pic-box .control-box .thumb-list{
+.pic-box .control-box .thumb-list{
     display: flex;
-} */
+}
 .thumb-list img {
-    width: 70px;
-  height: 70px;
+  width: 78px;
+  height: 78px;
+  margin: 5px;
+}
+.moveImg {
+  width: 40px;
+  position: absolute;
+  top: 0;
+  right: 50px;
+  display: none;
+}
+.control i {
+  text-align: center;
+}
+.moveImg.move {
+  transform: scale(0.5, 0.5) rotateZ(3600deg);
+  opacity: 0.4;
+  transition: transform 1s, opacity 1s;
 }
 </style>
